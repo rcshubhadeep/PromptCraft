@@ -1,0 +1,31 @@
+version: 0.1
+model_provider: OpenAI
+model_name: gpt-3.5-turbo
+
+type: role_based
+
+role: Junior Developer
+
+extra_attributes: 
+  - proficient
+  - uses list
+  - does not use generator
+
+task: Writing short python functions
+
+only_output: true
+protect_prompt_injection: true
+
+input_var_name: problem_desc
+
+test_cases:
+  case1:
+    problem_desc: Write a simple function that generates first 10 fibonacci numbers
+    expected_output: >
+      ```
+      def fibonacci():
+          fib = [0, 1]
+          for i in range(2, 10):
+              fib.append(fib[i-1] + fib[i-2])
+          return fib
+      ```

@@ -1,0 +1,2 @@
+class PromptGeneratorBase(object):
+    

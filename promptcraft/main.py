@@ -4,7 +4,8 @@ import pathlib
 
 import click
 
-from promptcraft.exceptions import HFandOAIBothPresentError
+from promptcraft.exceptions import HFandOAIBothPresentError, CouldnotProcessConfigurationError
+from promptcraft.engine import entry_point
 
 
 @click.command()
@@ -22,8 +23,10 @@ def main(conf_file: str, openai_api_key:str, hf_api_key:str):
     
     if not pathlib.Path(conf_file).exists():
         raise FileNotFoundError(conf_file)
-
     
+    data = entry_point(conf_file)
+    if not data:
+        raise CouldnotProcessConfigurationError(conf_file)
 
 
 if __name__ == "__main__":
