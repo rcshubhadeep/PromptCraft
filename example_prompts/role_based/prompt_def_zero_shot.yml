@@ -1,6 +1,11 @@
-version: 0.1
+version: 0.1.0
+
 model_provider: OpenAI
 model_name: gpt-3.5-turbo
+model_type: instruction following
+model_args:
+  temperature: 0.0
+  top_p: 1
 
 type: role_based
 
@@ -8,24 +13,34 @@ role: Junior Developer
 
 extra_attributes: 
   - proficient
-  - uses list
-  - does not use generator
+  - who uses list
+  - who does not use generator
 
-task: Writing short python functions
+task: write short python functions
 
-only_output: true
-protect_prompt_injection: true
+only_output: true  # Setting it true means we will not ask the LLM to explain itself.
+protect_prompt_injection: false  # Will add extra tokens  in the prompt. And it is NOT full-proof.
+check_prompt_for_bad_intent: true  # Will make additional call to the LLM
+output_type: code
 
-input_var_name: problem_desc
+input_vars:
+  separator: "\n"
+  var_names:
+    - problem_desc
+    - test
 
 test_cases:
   case1:
     problem_desc: Write a simple function that generates first 10 fibonacci numbers
-    expected_output: >
-      ```
+    test: "BBB"
+    expected_output: |
       def fibonacci():
           fib = [0, 1]
           for i in range(2, 10):
               fib.append(fib[i-1] + fib[i-2])
           return fib
-      ```
+    test_method:
+      language: python
+      strategies:
+        - run_only
+        - semantic_similarity  # Will make an additional call to the LLM.
