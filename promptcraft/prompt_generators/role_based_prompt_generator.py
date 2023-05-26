@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from typing import Callable, Any, Tuple, List, Union
 from .prompt_generator_base import PromptGeneratorBase
 from promptcraft.config import OUTPUT_TYPES, MODEL_TYPES, MODEL_PROVIDERS
@@ -59,13 +61,25 @@ value1, value2, value3, ..."""
             return ""
 
     def _generate_prompt(self, start: str = "", end: str = "") -> Tuple[str, Union[List[dict], None]]:
-        role_part = start + "\n" + self._craft_role_part() + self._craft_task_part() + self._restrict_type_of_output() + "\n"
+        """
+        @TODO: This method is too large. We need to fragment it.
+        """
+        if self.data.get('prompt_file') is not None:
+            # If we have a prompt file then we load the prompt from it.
+            with open(self.data.get('prompt_file')) as fp:
+                prompt = fp.read()
+            role_part = start + "\n" + prompt
+        else:
+            # Otherwise we try to generate it from the fragments.
+            role_part = start + "\n" + self._craft_role_part() + self._craft_task_part() + self._restrict_type_of_output() + "\n"
 
         system_message = role_part + end if end else role_part
         
         input_vars = self.data.get('input_vars')
         var_names = []
+        
         if input_vars:
+            # We need to put the input variables right after prompt if we have generated it
             separator = input_vars.get('separator', "")
             if input_vars.get('var_names') is None:
                 raise MandatoryPropertyMissingError('var_names')
@@ -75,7 +89,7 @@ value1, value2, value3, ..."""
                 var_names.append(inv_var)
         
         if self.data.get('test_cases') is None:
-            test_cases = [{k: "" for k in var_names}]
+            test_cases = [{"inputs": {k: "" for k in var_names}}]
         else:
             test_cases = []
             for case_name, case_details in self.data.get('test_cases').items():

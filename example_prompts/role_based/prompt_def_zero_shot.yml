@@ -1,11 +1,16 @@
-version: 0.1.0
+version: 0.1.0  # This is the latest version. If you do not want then you can omit this part. Latest version will be assumed.
+
+app_type: CLI  # CLI, WEB, AGENT are the two allowed values at the moment
 
 model_provider: OpenAI
-model_name: gpt-3.5-turbo
+model_name: text-davinci-003
 model_type: instruction following
 model_args:
   temperature: 0.0
   top_p: 1
+
+## This following section is generating the prompt. You can omit and supply a file instead
+## prompt_file: <path/path/file>
 
 type: role_based
 
@@ -15,20 +20,24 @@ extra_attributes:
   - proficient
   - who uses list
   - who does not use generator
+  - who makes syntactical mistake in the code.
 
 task: write short python functions
+## Until here.
 
-only_output: true  # Setting it true means we will not ask the LLM to explain itself.
-protect_prompt_injection: false  # Will add extra tokens  in the prompt. And it is NOT full-proof.
+only_output: true  # Setting it true means we will not ask the LLM to explain itself. NOT NEEDED when prompt_file is there.
+protect_prompt_injection: true  # Will add extra tokens  in the prompt. And it is NOT full-proof.
 check_prompt_for_bad_intent: true  # Will make additional call to the LLM
-output_type: code
+output_type: code  # Not needed if you are supplying prompt_file
 
+## These ones will get appended after the system prompt. They are placeholders where actual tasks will be replaced.
 input_vars:
   separator: "\n"
   var_names:
     - problem_desc
     - test
 
+# Unit tests
 test_cases:
   case1:
     problem_desc: Write a simple function that generates first 10 fibonacci numbers
@@ -40,7 +49,8 @@ test_cases:
               fib.append(fib[i-1] + fib[i-2])
           return fib
     test_method:
+      allow_unsafe: true
       language: python
       strategies:
-        - run_only
-        - semantic_similarity  # Will make an additional call to the LLM.
+        - run
+        - semantic_similarity  # Will make an additional call to the LLM (GPT-4 is the only LLM supported at the moment)

@@ -11,6 +11,7 @@ from rich import print
 from promptcraft.exceptions import CouldnotProcessConfigurationError, VersionMismatchError
 from promptcraft.config import LATEST_VERSION, MODEL_PROVIDERS
 from promptcraft.prompt_generators import get_prompt_generator
+from promptcraft.runners import get_llm, get_prompt_template, TestRunner
 
 
 def _check_version(data: dict) -> str:
@@ -30,9 +31,16 @@ def _check_model_provider(data: dict) -> Tuple[bool, Union[str, None]]:
         return (False, data.get('model_provider'))
     else:
         return (True, data.get('model_provider'))
+
+def _get_model_details(data: dict) -> Tuple[str, str, str, dict]:
+    """
+    Returns the model name, model type and model specific hyper parameters (or empty dictionary)
+    """
+    model_hyp = data.get('model_args') if data.get('model_args') is not None else {}
+    return data['model_provider'], data['model_name'], data['model_type'], model_hyp
         
 
-def entry_point(file_name:str, verbose) -> Any:
+def entry_point(file_name: str, api_key:str, verbose: bool) -> Any:
     try:
         with open(file_name) as fp:
             data = load(fp, Loader=Loader)
@@ -55,8 +63,21 @@ def entry_point(file_name:str, verbose) -> Any:
                     run_tests = True
                     break
             
-            var_names = list(test_cases[0].keys()) if not run_tests else list(test_cases[0]['inputs'].keys())
+            var_names = list(test_cases[0]['inputs'].keys())
+            # print(var_names)
             
-            
+            if present:
+                model_provider, model_name, model_type, model_args = _get_model_details(data)
+                llm = get_llm(model_provider, model_type, model_name, api_key, model_args)
+                prompt_template = get_prompt_template(var_names, prompt)
+                # print(test_cases)
+                if run_tests:
+                    test_runner = TestRunner(llm, prompt_template)
+                    test_runner.run_tests(test_cases)
+                # print(f"Here is the prompt -\n\n {prompt}")
+            else:
+                print(f"Here is the prompt -\n\n {prompt}")
     except ParserError:
         raise CouldnotProcessConfigurationError(file_name)
+    except Exception:
+        raise

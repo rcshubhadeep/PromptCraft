@@ -25,7 +25,9 @@ def main(conf_file: str, openai_api_key:str, hf_api_key:str, verbose:bool):
     if not pathlib.Path(conf_file).exists():
         raise FileNotFoundError(conf_file)
     
-    entry_point(conf_file, verbose)
+    api_key = openai_api_key if openai_api_key else hf_api_key
+    
+    entry_point(conf_file, api_key, verbose)
 
 
 if __name__ == "__main__":

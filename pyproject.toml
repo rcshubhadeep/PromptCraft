@@ -19,6 +19,9 @@ rich = "^13.3.5"
 promptcraft = "promptcraft.main:main"
 
 
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.13.2"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

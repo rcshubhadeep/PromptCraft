@@ -48,6 +48,15 @@ class MandatoryPropertyMissingError(Exception):
         super().__init__(f"Mandatory field '{filed_name}' missing from app file")
 
 
+class UnsafeCodeExecutionError(Exception):
+    """
+    Exception to be raised if we try to execute unsafe code in Python REPL unless we explicitly ask to do so
+    """
+    def __init__(self, *args: object) -> None:
+        code = args[0]
+        super().__init__(f"Unsafe code execution\n\n{code}")
+
+
 # class NoModelProvider(Exception):
 #     """
 #     Exception to be raised when no model provider was supplied.
